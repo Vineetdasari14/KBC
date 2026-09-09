@@ -1,93 +1,1346 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KBC Admin</title><link rel="stylesheet" href="styles.css"><script src="js/config.js"></script><script src="js/common.js"></script></head>
-<body><main class="app shell">
-<div class="topbar"><div class="brand-inline"><div class="mini-logo">K</div><div><h1>Champion Control Room</h1><div class="sub">Question bank + live show controls</div></div></div><a class="btn btn-ghost" href="index.html">Home</a></div>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>KBC Admin</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+</head>
 
-<section id="loginPanel" class="panel login"><div class="center"><h2>Admin Login</h2><p class="muted">Use the Supabase Auth account created for your host/admin.</p></div>
-<div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
-<div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
-<div class="actions"><button id="loginBtn" class="btn btn-gold">Sign in</button></div><div id="loginError" class="error"></div></section>
+<body>
+<main class="app shell">
 
-<section id="adminPanel" style="display:none">
-<div class="grid-2">
-  <div class="panel">
-    <div class="section-title"><h2>Live Game</h2><span id="statusPill" class="status-pill pill-idle">idle</span></div>
-    <div id="liveQuestion" class="question-box"><div class="muted">No question loaded.</div></div>
-    <div style="height:12px"></div>
-    <div class="row">
-      <button id="startBtn" class="btn btn-blue">Start Selected</button>
-      <button id="nextBtn" class="btn">Next Active</button>
-      <button id="pauseBtn" class="btn">Pause</button>
-      <button id="revealBtn" class="btn btn-gold">Reveal Answer</button>
+  <div class="topbar">
+    <div class="brand-inline">
+      <div class="mini-logo">K</div>
+      <div>
+        <h1>Champion Control Room</h1>
+        <div class="sub">Question bank + live show controls</div>
+      </div>
     </div>
-    <div style="height:8px"></div>
-    <div class="row"><button id="finishBtn" class="btn btn-danger">Finish Game</button><button id="resetBtn" class="btn">Reset</button></div>
+    <a class="btn btn-ghost" href="index.html">Home</a>
   </div>
-  <div class="panel">
-    <div class="section-title"><h2>Question Editor</h2><button id="newBtn" class="btn">New</button></div>
-    <input type="hidden" id="qid">
-    <div class="row"><div class="field"><label>Question #</label><input id="number" type="number" min="1"></div><div class="field"><label>Prize (INR)</label><input id="prize" type="number" min="0"></div></div>
-    <div class="field"><label>Question</label><textarea id="question"></textarea></div>
-    <div class="row"><div class="field"><label>Option A</label><input id="a"></div><div class="field"><label>Option B</label><input id="b"></div></div>
-    <div class="row"><div class="field"><label>Option C</label><input id="c"></div><div class="field"><label>Option D</label><input id="d"></div></div>
-    <div class="row"><div class="field"><label>Correct Option</label><select id="correct"><option>A</option><option>B</option><option>C</option><option>D</option></select></div><div class="field"><label>Difficulty</label><select id="difficulty"><option>Easy</option><option>Medium</option><option>Hard</option></select></div></div>
-    <div class="field"><label>Category</label><input id="category"></div><div class="field"><label>Explanation</label><textarea id="explanation"></textarea></div>
-    <div class="field"><label><input id="active" type="checkbox" checked> Active</label></div>
-    <div class="actions"><button id="saveBtn" class="btn btn-gold">Save Question</button><button id="deleteBtn" class="btn btn-danger">Deactivate</button></div>
-    <div id="message" class="success"></div>
-  </div>
-</div>
-<div class="panel" style="margin-top:18px"><div class="section-title"><h2>Question Bank</h2><button id="refreshBtn" class="btn">Refresh</button></div><div class="table-wrap"><table class="qtable"><thead><tr><th>#</th><th>Question</th><th>Correct</th><th>Prize</th><th>Difficulty</th><th>Active</th></tr></thead><tbody id="qbody"></tbody></table></div></div>
-</section></main>
+
+  <!-- LOGIN -->
+  <section id="loginPanel" class="panel login">
+    <div class="center">
+      <h2>Admin Login</h2>
+      <p class="muted">
+        Use the Supabase Auth account created for your host/admin.
+      </p>
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <input
+        id="email"
+        type="email"
+        autocomplete="username"
+      >
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input
+        id="password"
+        type="password"
+        autocomplete="current-password"
+      >
+    </div>
+
+    <div class="actions">
+      <button id="loginBtn" class="btn btn-gold">
+        Sign in
+      </button>
+    </div>
+
+    <div id="loginError" class="error"></div>
+  </section>
+
+
+  <!-- ADMIN CONTROL ROOM -->
+  <section id="adminPanel" style="display:none">
+
+    <div class="grid-2">
+
+      <!-- LIVE GAME -->
+      <div class="panel">
+
+        <div class="section-title">
+          <h2>Live Game</h2>
+          <span id="statusPill" class="status-pill pill-idle">
+            idle
+          </span>
+        </div>
+
+        <div id="liveQuestion" class="question-box">
+          <div class="muted">
+            No question loaded.
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="row">
+
+          <button id="startBtn" class="btn btn-blue">
+            Start Selected
+          </button>
+
+          <button id="nextBtn" class="btn">
+            Next Active
+          </button>
+
+          <button id="pauseBtn" class="btn">
+            Pause
+          </button>
+
+          <button id="resumeBtn" class="btn btn-blue">
+            Resume
+          </button>
+
+          <button id="revealBtn" class="btn btn-gold">
+            Reveal Answer
+          </button>
+
+        </div>
+
+        <div style="height:8px"></div>
+
+        <div class="row">
+
+          <button id="finishBtn" class="btn btn-danger">
+            Finish Game
+          </button>
+
+          <button id="resetBtn" class="btn">
+            Reset
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- QUESTION EDITOR -->
+      <div class="panel">
+
+        <div class="section-title">
+          <h2>Question Editor</h2>
+
+          <button id="newBtn" class="btn">
+            New
+          </button>
+        </div>
+
+        <input type="hidden" id="qid">
+
+        <div class="row">
+
+          <div class="field">
+            <label>Question #</label>
+            <input
+              id="number"
+              type="number"
+              min="1"
+            >
+          </div>
+
+          <div class="field">
+            <label>Prize (INR)</label>
+            <input
+              id="prize"
+              type="number"
+              min="0"
+            >
+          </div>
+
+        </div>
+
+        <div class="field">
+          <label>Question</label>
+          <textarea id="question"></textarea>
+        </div>
+
+        <div class="row">
+
+          <div class="field">
+            <label>Option A</label>
+            <input id="a">
+          </div>
+
+          <div class="field">
+            <label>Option B</label>
+            <input id="b">
+          </div>
+
+        </div>
+
+        <div class="row">
+
+          <div class="field">
+            <label>Option C</label>
+            <input id="c">
+          </div>
+
+          <div class="field">
+            <label>Option D</label>
+            <input id="d">
+          </div>
+
+        </div>
+
+        <div class="row">
+
+          <div class="field">
+            <label>Correct Option</label>
+
+            <select id="correct">
+              <option>A</option>
+              <option>B</option>
+              <option>C</option>
+              <option>D</option>
+            </select>
+
+          </div>
+
+          <div class="field">
+            <label>Difficulty</label>
+
+            <select id="difficulty">
+              <option>Easy</option>
+              <option>Medium</option>
+              <option>Hard</option>
+            </select>
+
+          </div>
+
+        </div>
+
+        <div class="field">
+          <label>Category</label>
+          <input id="category">
+        </div>
+
+        <div class="field">
+          <label>Explanation</label>
+          <textarea id="explanation"></textarea>
+        </div>
+
+        <div class="field">
+          <label>
+            <input
+              id="active"
+              type="checkbox"
+              checked
+            >
+            Active
+          </label>
+        </div>
+
+        <div class="actions">
+
+          <button id="saveBtn" class="btn btn-gold">
+            Save Question
+          </button>
+
+          <button id="deleteBtn" class="btn btn-danger">
+            Deactivate
+          </button>
+
+        </div>
+
+        <div id="message" class="success"></div>
+
+      </div>
+
+    </div>
+
+
+    <!-- QUESTION BANK -->
+    <div
+      class="panel"
+      style="margin-top:18px"
+    >
+
+      <div class="section-title">
+
+        <h2>Question Bank</h2>
+
+        <button id="refreshBtn" class="btn">
+          Refresh
+        </button>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table class="qtable">
+
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Question</th>
+              <th>Correct</th>
+              <th>Prize</th>
+              <th>Difficulty</th>
+              <th>Active</th>
+            </tr>
+          </thead>
+
+          <tbody id="qbody"></tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
 <script>
-let SB, questions=[], current=null;
-const formIds=["qid","number","prize","question","a","b","c","d","correct","difficulty","category","explanation","active"];
-function val(id){return qs("#"+id).value}
-function setVal(id,v){qs("#"+id).value=v??""}
-function clearForm(){formIds.forEach(i=>i==="active"?qs("#active").checked=true:setVal(i,""));setVal("correct","A");setVal("difficulty","Easy")}
-function fillForm(q){setVal("qid",q.id);setVal("number",q.question_number);setVal("prize",q.prize);setVal("question",q.question_text);setVal("a",q.option_a);setVal("b",q.option_b);setVal("c",q.option_c);setVal("d",q.option_d);setVal("correct",q.correct_option);setVal("difficulty",q.difficulty);setVal("category",q.category);setVal("explanation",q.explanation);qs("#active").checked=!!q.is_active}
-async function ensureAdmin(){
- const {data:{user}}=await SB.auth.getUser(); if(!user){qs("#loginPanel").style.display="block";return false}
- const {data,error}=await SB.from("admin_users").select("user_id,display_name").eq("user_id",user.id).maybeSingle(); if(error||!data){await SB.auth.signOut();qs("#loginError").textContent="This account is not registered as an admin.";return false}
- qs("#loginPanel").style.display="none";qs("#adminPanel").style.display="block";return true
+
+let SB;
+let questions = [];
+let current = null;
+
+
+/* ---------------------------
+   FORM HELPERS
+--------------------------- */
+
+const formIds = [
+  "qid",
+  "number",
+  "prize",
+  "question",
+  "a",
+  "b",
+  "c",
+  "d",
+  "correct",
+  "difficulty",
+  "category",
+  "explanation",
+  "active"
+];
+
+
+function val(id) {
+  return qs("#" + id).value;
 }
-async function loadQs(){const {data,error}=await SB.from("questions").select("*").order("question_number");if(error){toast(error.message,"error");return}questions=data||[];qs("#qbody").innerHTML=questions.map(q=>`<tr data-id="${q.id}"><td>${q.question_number}</td><td>${esc(q.question_text)}</td><td>${q.correct_option}</td><td>${fmtMoney(q.prize)}</td><td>${q.difficulty}</td><td>${q.is_active?"Yes":"No"}</td></tr>`).join("");qsa("#qbody tr").forEach(tr=>tr.onclick=()=>fillForm(questions.find(q=>q.id===tr.dataset.id)));renderCurrent()}
-function gameMarkup(g){if(!g||!g.question_text)return `<div class="muted">No question loaded.</div>`;return `<div class="question-meta"><span>Question ${g.question_number} • ${fmtMoney(g.prize)}</span><span>${g.time_limit}s</span></div><h3 class="question-text">${esc(g.question_text)}</h3><div class="options">${["A","B","C","D"].map(x=>`<div class="option ${g.selected_option===x?"selected":""}"><span class="letter">${x}</span><span>${esc(g["option_"+x.toLowerCase()])}</span></div>`).join("")}</div>${g.reveal_answer?`<div class="reveal">Answer revealed: <b>${g.selected_option||"Not selected"}</b></div>`:""}`}
-function renderCurrent(){if(!current)return;qs("#statusPill").className="status-pill pill-"+current.status;qs("#statusPill").textContent=current.status;qs("#liveQuestion").innerHTML=gameMarkup(current)}
-async function saveGame(patch){const {data,error}=await SB.from("game_state").update(patch).eq("id",true).select().single();if(error){toast(error.message,"error");return}current=data;renderCurrent()}
-async function startQ(q){if(!q){toast("Select a question first.","error");return}const limit=30;await saveGame({status:"live",question_id:q.id,question_number:q.question_number,question_text:q.question_text,option_a:q.option_a,option_b:q.option_b,option_c:q.option_c,option_d:q.option_d,prize:q.prize,time_limit:limit,ends_at:new Date(Date.now()+limit*1000).toISOString(),reveal_answer:false,selected_option:null})}
-async function init(){
- SB=await getSB(); const {data:{session}}=await SB.auth.getSession(); if(session) await ensureAdmin();
- qs("#loginBtn").onclick=async()=>{const {error}=await SB.auth.signInWithPassword({email:val("email"),password:val("password")});if(error)qs("#loginError").textContent=error.message;else await ensureAdmin()};
- qs("#newBtn").onclick=clearForm;qs("#refreshBtn").onclick=loadQs;
- qs("#saveBtn").onclick=async()=>{const payload={question_number:+val("number"),question_text:val("question"),option_a:val("a"),option_b:val("b"),option_c:val("c"),option_d:val("d"),correct_option:val("correct"),prize:+val("prize"),difficulty:val("difficulty"),category:val("category"),explanation:val("explanation"),is_active:qs("#active").checked};let res;if(val("qid"))res=await SB.from("questions").update(payload).eq("id",val("qid"));else res=await SB.from("questions").insert(payload);if(res.error)toast(res.error.message,"error");else{toast("Question saved.");await loadQs()}};
- qs("#deleteBtn").onclick=async()=>{if(!val("qid"))return;const {error}=await SB.from("questions").update({is_active:false}).eq("id",val("qid"));if(error)toast(error.message,"error");else{toast("Question deactivated.");await loadQs()}};
- qs("#startBtn").onclick=()=>startQ(questions.find(q=>q.id===val("qid")));
- qs("#nextBtn").onclick=()=>{const active=questions.filter(q=>q.is_active);const next=active.find(q=>!current||q.question_number>current.question_number)||active[0];startQ(next)};
- qs("#pauseBtn").onclick=async()=>{
- const left=state?.ends_at ? Math.max(0, Math.ceil((new Date(state.ends_at)-Date.now())/1000)) : 0;
- if(!state?.question_id || state.status!=="live"){toast("No live question to pause.","error");return}
- await saveGame({status:"paused",time_limit:left});
-};
-qs("#resumeBtn").onclick=async()=>{
- if(!state?.question_id || state.status!=="paused"){toast("Game is not paused.","error");return}
- const left=Math.max(1, Number(state.time_limit)||0);
- await saveGame({status:"live",time_limit:left,ends_at:new Date(Date.now()+left*1000).toISOString()});
-};
-qs("#revealBtn").onclick=async()=>{
- if(!state?.question_id){toast("No active question.","error");return}
- const q=questions.find(x=>x.id===state.question_id);
- if(!q){toast("Question not found.","error");return}
- await saveGame({reveal_answer:true,selected_option:q.correct_option});
-};qs("#finishBtn").onclick=()=>saveGame({status:"finished"});qs("#resetBtn").onclick=()=>saveGame({status:"idle",question_id:null,question_number:0,question_text:null,option_a:null,option_b:null,option_c:null,option_d:null,prize:0,time_limit:20,ends_at:null,reveal_answer:false,selected_option:null});
- const {data:g,error}=await SB.from("game_state").select("*").eq("id",true).single();if(!error){current=g;renderCurrent()}
-setInterval(async()=>{
- if(current?.status==="live" && current.ends_at && new Date(current.ends_at)<=new Date()){
-   const {data:g}=await SB.from("game_state").update({status:"paused",time_limit:0}).eq("id",true).select().single();
-   if(g){current=g;renderCurrent()}
- }
-},500);
- await loadQs();
- SB.channel("admin-live").on("postgres_changes",{event:"UPDATE",schema:"public",table:"game_state"},p=>{current=p.new;renderCurrent()}).subscribe();
+
+
+function setVal(id, value) {
+  qs("#" + id).value = value ?? "";
 }
+
+
+function clearForm() {
+
+  formIds.forEach(id => {
+
+    if (id === "active") {
+      qs("#active").checked = true;
+    } else {
+      setVal(id, "");
+    }
+
+  });
+
+  setVal("correct", "A");
+  setVal("difficulty", "Easy");
+}
+
+
+function fillForm(q) {
+
+  setVal("qid", q.id);
+  setVal("number", q.question_number);
+  setVal("prize", q.prize);
+  setVal("question", q.question_text);
+
+  setVal("a", q.option_a);
+  setVal("b", q.option_b);
+  setVal("c", q.option_c);
+  setVal("d", q.option_d);
+
+  setVal("correct", q.correct_option);
+  setVal("difficulty", q.difficulty);
+  setVal("category", q.category);
+  setVal("explanation", q.explanation);
+
+  qs("#active").checked = !!q.is_active;
+}
+
+
+/* ---------------------------
+   ADMIN AUTH
+--------------------------- */
+
+async function ensureAdmin() {
+
+  const {
+    data: { user }
+  } = await SB.auth.getUser();
+
+  if (!user) {
+
+    qs("#loginPanel").style.display = "block";
+
+    return false;
+  }
+
+
+  const {
+    data,
+    error
+  } = await SB
+    .from("admin_users")
+    .select("user_id,display_name")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+
+  if (error || !data) {
+
+    await SB.auth.signOut();
+
+    qs("#loginError").textContent =
+      "This account is not registered as an admin.";
+
+    return false;
+  }
+
+
+  qs("#loginPanel").style.display = "none";
+  qs("#adminPanel").style.display = "block";
+
+  return true;
+}
+
+
+/* ---------------------------
+   LOAD QUESTIONS
+--------------------------- */
+
+async function loadQs() {
+
+  const {
+    data,
+    error
+  } = await SB
+    .from("questions")
+    .select("*")
+    .order("question_number");
+
+
+  if (error) {
+
+    toast(error.message, "error");
+
+    return;
+  }
+
+
+  questions = data || [];
+
+
+  qs("#qbody").innerHTML =
+    questions
+      .map(q => `
+
+        <tr data-id="${q.id}">
+
+          <td>
+            ${q.question_number}
+          </td>
+
+          <td>
+            ${esc(q.question_text)}
+          </td>
+
+          <td>
+            ${q.correct_option}
+          </td>
+
+          <td>
+            ${fmtMoney(q.prize)}
+          </td>
+
+          <td>
+            ${q.difficulty}
+          </td>
+
+          <td>
+            ${q.is_active ? "Yes" : "No"}
+          </td>
+
+        </tr>
+
+      `)
+      .join("");
+
+
+  qsa("#qbody tr").forEach(tr => {
+
+    tr.onclick = () => {
+
+      const q =
+        questions.find(
+          x => x.id === tr.dataset.id
+        );
+
+      if (q) {
+        fillForm(q);
+      }
+
+    };
+
+  });
+
+
+  renderCurrent();
+}
+
+
+/* ---------------------------
+   LIVE QUESTION DISPLAY
+--------------------------- */
+
+function gameMarkup(g) {
+
+  if (!g || !g.question_text) {
+
+    return `
+      <div class="muted">
+        No question loaded.
+      </div>
+    `;
+  }
+
+
+  return `
+
+    <div class="question-meta">
+
+      <span>
+        Question ${g.question_number}
+        •
+        ${fmtMoney(g.prize)}
+      </span>
+
+      <span>
+        ${g.time_limit}s
+      </span>
+
+    </div>
+
+
+    <h3 class="question-text">
+      ${esc(g.question_text)}
+    </h3>
+
+
+    <div class="options">
+
+      ${["A","B","C","D"]
+        .map(letter => `
+
+          <div
+            class="option ${
+              g.selected_option === letter
+                ? "selected"
+                : ""
+            }"
+          >
+
+            <span class="letter">
+              ${letter}
+            </span>
+
+            <span>
+              ${esc(
+                g[
+                  "option_" +
+                  letter.toLowerCase()
+                ]
+              )}
+            </span>
+
+          </div>
+
+        `)
+        .join("")
+      }
+
+    </div>
+
+
+    ${
+      g.reveal_answer
+        ? `
+          <div class="reveal">
+            Answer revealed:
+            <b>
+              ${g.selected_option || "Not selected"}
+            </b>
+          </div>
+        `
+        : ""
+    }
+
+  `;
+}
+
+
+function renderCurrent() {
+
+  if (!current) {
+    return;
+  }
+
+
+  const pill =
+    qs("#statusPill");
+
+
+  pill.className =
+    "status-pill pill-" +
+    current.status;
+
+
+  pill.textContent =
+    current.status;
+
+
+  qs("#liveQuestion").innerHTML =
+    gameMarkup(current);
+}
+
+
+/* ---------------------------
+   GAME STATE UPDATE
+--------------------------- */
+
+async function saveGame(patch) {
+
+  const {
+    data,
+    error
+  } = await SB
+    .from("game_state")
+    .update(patch)
+    .eq("id", true)
+    .select()
+    .single();
+
+
+  if (error) {
+
+    toast(error.message, "error");
+
+    return false;
+  }
+
+
+  current = data;
+
+  renderCurrent();
+
+  return true;
+}
+
+
+/* ---------------------------
+   START QUESTION
+--------------------------- */
+
+async function startQ(q) {
+
+  if (!q) {
+
+    toast(
+      "Select a question first.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  /* 30 SECOND TIMER */
+
+  const limit = 30;
+
+
+  await saveGame({
+
+    status: "live",
+
+    question_id: q.id,
+
+    question_number:
+      q.question_number,
+
+    question_text:
+      q.question_text,
+
+    option_a:
+      q.option_a,
+
+    option_b:
+      q.option_b,
+
+    option_c:
+      q.option_c,
+
+    option_d:
+      q.option_d,
+
+    prize:
+      q.prize,
+
+    time_limit:
+      limit,
+
+    ends_at:
+      new Date(
+        Date.now() +
+        limit * 1000
+      ).toISOString(),
+
+    reveal_answer:
+      false,
+
+    selected_option:
+      null
+
+  });
+}
+
+
+/* ---------------------------
+   INITIALIZE
+--------------------------- */
+
+async function init() {
+
+  SB = await getSB();
+
+
+  /* Check existing session */
+
+  const {
+    data: { session }
+  } = await SB.auth.getSession();
+
+
+  if (session) {
+
+    await ensureAdmin();
+
+  }
+
+
+  /* ---------------------------
+     LOGIN
+  --------------------------- */
+
+  qs("#loginBtn").onclick =
+    async () => {
+
+      const {
+        error
+      } = await SB.auth.signInWithPassword({
+
+        email:
+          val("email"),
+
+        password:
+          val("password")
+
+      });
+
+
+      if (error) {
+
+        qs("#loginError").textContent =
+          error.message;
+
+      } else {
+
+        await ensureAdmin();
+
+      }
+
+    };
+
+
+  /* ---------------------------
+     NEW QUESTION
+  --------------------------- */
+
+  qs("#newBtn").onclick =
+    clearForm;
+
+
+  /* ---------------------------
+     REFRESH
+  --------------------------- */
+
+  qs("#refreshBtn").onclick =
+    loadQs;
+
+
+  /* ---------------------------
+     SAVE QUESTION
+  --------------------------- */
+
+  qs("#saveBtn").onclick =
+    async () => {
+
+      const payload = {
+
+        question_number:
+          Number(val("number")),
+
+        question_text:
+          val("question"),
+
+        option_a:
+          val("a"),
+
+        option_b:
+          val("b"),
+
+        option_c:
+          val("c"),
+
+        option_d:
+          val("d"),
+
+        correct_option:
+          val("correct"),
+
+        prize:
+          Number(val("prize")),
+
+        difficulty:
+          val("difficulty"),
+
+        category:
+          val("category"),
+
+        explanation:
+          val("explanation"),
+
+        is_active:
+          qs("#active").checked
+
+      };
+
+
+      let result;
+
+
+      if (val("qid")) {
+
+        result =
+          await SB
+            .from("questions")
+            .update(payload)
+            .eq("id", val("qid"));
+
+      } else {
+
+        result =
+          await SB
+            .from("questions")
+            .insert(payload);
+
+      }
+
+
+      if (result.error) {
+
+        toast(
+          result.error.message,
+          "error"
+        );
+
+      } else {
+
+        toast(
+          "Question saved."
+        );
+
+        clearForm();
+
+        await loadQs();
+
+      }
+
+    };
+
+
+  /* ---------------------------
+     DEACTIVATE QUESTION
+  --------------------------- */
+
+  qs("#deleteBtn").onclick =
+    async () => {
+
+      const id =
+        val("qid");
+
+
+      if (!id) {
+
+        toast(
+          "Select a question first.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const {
+        error
+      } = await SB
+        .from("questions")
+        .update({
+          is_active: false
+        })
+        .eq("id", id);
+
+
+      if (error) {
+
+        toast(
+          error.message,
+          "error"
+        );
+
+      } else {
+
+        toast(
+          "Question deactivated."
+        );
+
+        clearForm();
+
+        await loadQs();
+
+      }
+
+    };
+
+
+  /* ---------------------------
+     START SELECTED
+  --------------------------- */
+
+  qs("#startBtn").onclick =
+    () => {
+
+      const q =
+        questions.find(
+          x => x.id === val("qid")
+        );
+
+      startQ(q);
+
+    };
+
+
+  /* ---------------------------
+     NEXT QUESTION
+  --------------------------- */
+
+  qs("#nextBtn").onclick =
+    () => {
+
+      const active =
+        questions
+          .filter(q => q.is_active)
+          .sort(
+            (a,b) =>
+              a.question_number -
+              b.question_number
+          );
+
+
+      if (!active.length) {
+
+        toast(
+          "No active questions.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      let next;
+
+
+      if (!current ||
+          !current.question_number) {
+
+        next = active[0];
+
+      } else {
+
+        next =
+          active.find(
+            q =>
+              q.question_number >
+              current.question_number
+          ) || active[0];
+
+      }
+
+
+      clearForm();
+
+      fillForm(next);
+
+      startQ(next);
+
+    };
+
+
+  /* ---------------------------
+     PAUSE
+  --------------------------- */
+
+  qs("#pauseBtn").onclick =
+    async () => {
+
+      if (!current?.question_id) {
+
+        toast(
+          "No live question to pause.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (current.status !== "live") {
+
+        toast(
+          "Game is not currently live.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const left =
+        current.ends_at
+          ? Math.max(
+              0,
+              Math.ceil(
+                (
+                  new Date(
+                    current.ends_at
+                  ).getTime()
+                  -
+                  Date.now()
+                ) / 1000
+              )
+            )
+          : Number(
+              current.time_limit
+            ) || 0;
+
+
+      await saveGame({
+
+        status:
+          "paused",
+
+        time_limit:
+          left
+
+      });
+
+    };
+
+
+  /* ---------------------------
+     RESUME
+  --------------------------- */
+
+  qs("#resumeBtn").onclick =
+    async () => {
+
+      if (!current?.question_id) {
+
+        toast(
+          "No question to resume.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (current.status !== "paused") {
+
+        toast(
+          "Game is not paused.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const left =
+        Math.max(
+          1,
+          Number(
+            current.time_limit
+          ) || 0
+        );
+
+
+      await saveGame({
+
+        status:
+          "live",
+
+        time_limit:
+          left,
+
+        ends_at:
+          new Date(
+            Date.now() +
+            left * 1000
+          ).toISOString()
+
+      });
+
+    };
+
+
+  /* ---------------------------
+     REVEAL ANSWER
+  --------------------------- */
+
+  qs("#revealBtn").onclick =
+    async () => {
+
+      if (!current?.question_id) {
+
+        toast(
+          "No active question.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const q =
+        questions.find(
+          x =>
+            x.id ===
+            current.question_id
+        );
+
+
+      if (!q) {
+
+        toast(
+          "Question not found.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      await saveGame({
+
+        reveal_answer:
+          true,
+
+        selected_option:
+          q.correct_option
+
+      });
+
+    };
+
+
+  /* ---------------------------
+     FINISH
+  --------------------------- */
+
+  qs("#finishBtn").onclick =
+    () =>
+      saveGame({
+
+        status:
+          "finished"
+
+      });
+
+
+  /* ---------------------------
+     RESET
+  --------------------------- */
+
+  qs("#resetBtn").onclick =
+    () =>
+      saveGame({
+
+        status:
+          "idle",
+
+        question_id:
+          null,
+
+        question_number:
+          0,
+
+        question_text:
+          null,
+
+        option_a:
+          null,
+
+        option_b:
+          null,
+
+        option_c:
+          null,
+
+        option_d:
+          null,
+
+        prize:
+          0,
+
+        time_limit:
+          30,
+
+        ends_at:
+          null,
+
+        reveal_answer:
+          false,
+
+        selected_option:
+          null
+
+      });
+
+
+  /* ---------------------------
+     LOAD CURRENT GAME
+  --------------------------- */
+
+  const {
+    data: g,
+    error: gameError
+  } = await SB
+    .from("game_state")
+    .select("*")
+    .eq("id", true)
+    .single();
+
+
+  if (!gameError) {
+
+    current = g;
+
+    renderCurrent();
+
+  }
+
+
+  /* ---------------------------
+     AUTOMATIC TIMER EXPIRY
+  --------------------------- */
+
+  setInterval(
+    async () => {
+
+      if (
+        current?.status === "live" &&
+        current.ends_at &&
+        new Date(
+          current.ends_at
+        ) <= new Date()
+      ) {
+
+        await saveGame({
+
+          status:
+            "paused",
+
+          time_limit:
+            0
+
+        });
+
+      }
+
+    },
+    500
+  );
+
+
+  /* ---------------------------
+     LOAD QUESTION BANK
+  --------------------------- */
+
+  await loadQs();
+
+
+  /* ---------------------------
+     REALTIME GAME STATE
+  --------------------------- */
+
+  SB
+    .channel("admin-live")
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "game_state"
+      },
+      payload => {
+
+        current =
+          payload.new;
+
+        renderCurrent();
+
+      }
+    )
+    .subscribe();
+
+}
+
+
 init();
-</script></body></html>
+
+</script>
+
+</body>
+</html>
