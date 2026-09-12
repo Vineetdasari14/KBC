@@ -194,10 +194,12 @@ select {
   overflow-wrap: anywhere;
 }
 
-footer {
-  position: relative;
-  bottom: auto;
-  margin: 0 auto 14px;
+.landing footer {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  width: 100%;
+  margin: 0;
   padding-inline: 16px;
 }
 
