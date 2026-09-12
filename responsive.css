@@ -1,0 +1,547 @@
+/* Responsive layout layer — preserves the existing visual system and game UI. */
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.shell {
+  width: min(1360px, calc(100% - clamp(24px, 4vw, 64px)));
+  max-width: 1360px;
+}
+
+.app {
+  min-height: 100dvh;
+  padding-block: clamp(16px, 3vw, 30px) clamp(28px, 4vw, 48px);
+}
+
+.panel,
+.card,
+.show-card,
+.question-box,
+.option,
+.btn,
+button,
+input,
+textarea,
+select {
+  max-width: 100%;
+}
+
+.panel {
+  padding: clamp(16px, 2vw, 24px);
+  min-width: 0;
+}
+
+.topbar {
+  position: relative;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.topbar .brand-inline {
+  min-width: 0;
+  max-width: calc(100% - 96px);
+}
+
+.topbar .brand-inline > div:last-child {
+  min-width: 0;
+}
+
+.topbar h1:after {
+  overflow-wrap: anywhere;
+}
+
+/* Main game layout: flexible question area + bounded progress rail. */
+.game-with-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  gap: clamp(14px, 2vw, 24px);
+  align-items: start;
+}
+
+.game-with-progress > * {
+  min-width: 0;
+}
+
+.progress-panel {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.progress-list {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.progress-item {
+  min-width: 0;
+}
+
+.progress-prize,
+.progress-indicator {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Question surface */
+.question-box {
+  padding: clamp(18px, 3vw, 30px);
+  min-width: 0;
+}
+
+.question-meta {
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.question-text {
+  font-size: clamp(22px, 3vw, 40px);
+  overflow-wrap: anywhere;
+}
+
+.options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+}
+
+.option {
+  min-width: 0;
+}
+
+.option-copy {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Participant control row adapts instead of forcing a fixed horizontal strip. */
+.participant-result-panel {
+  grid-template-columns: minmax(90px, 150px) minmax(0, 1fr) auto;
+  min-width: 0;
+}
+
+/* Admin */
+.grid-2 {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+}
+
+.grid-2 > .panel {
+  min-width: 0;
+}
+
+.row,
+.actions {
+  min-width: 0;
+}
+
+.row > *,
+.actions > * {
+  min-width: 0;
+}
+
+.table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.qtable {
+  min-width: 680px;
+}
+
+/* Landing page */
+.landing {
+  min-height: 100dvh;
+  overflow-x: clip;
+  overflow-y: auto;
+}
+
+.landing-grid {
+  width: 100%;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr);
+  gap: clamp(36px, 6vw, 80px);
+  padding-block: clamp(40px, 7vh, 70px);
+}
+
+.hero,
+.hero-stage {
+  min-width: 0;
+}
+
+.hero-stage {
+  min-height: clamp(360px, 42vw, 500px);
+}
+
+.lede {
+  max-width: 100%;
+}
+
+.show-cards {
+  min-width: 0;
+}
+
+.show-card {
+  min-width: 0;
+}
+
+.show-card small,
+.show-card strong {
+  overflow-wrap: anywhere;
+}
+
+footer {
+  position: relative;
+  bottom: auto;
+  margin: 0 auto 14px;
+  padding-inline: 16px;
+}
+
+/* Medium laptop / tablet landscape */
+@media (max-width: 1100px) {
+  .shell {
+    width: min(100%, calc(100% - 32px));
+  }
+
+  .landing-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, .8fr);
+    gap: 42px;
+  }
+
+  .hero-stage {
+    min-height: 390px;
+  }
+
+  .game-with-progress {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 260px);
+  }
+
+  .grid-2 {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+/* Tablet / compact landscape: move progress below the game. */
+@media (max-width: 900px) {
+  .landing-grid {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding-block: 42px 70px;
+  }
+
+  .hero-stage {
+    min-height: 300px;
+  }
+
+  .stage-ring {
+    width: min(330px, 70vw);
+  }
+
+  .logo-core {
+    width: 150px;
+    height: 150px;
+    font-size: 32px;
+  }
+
+  .game-with-progress {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-panel {
+    width: 100%;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tablet portrait / large phones */
+@media (max-width: 700px) {
+  .shell {
+    width: calc(100% - 24px);
+  }
+
+  .app {
+    padding-top: 16px;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 16px;
+  }
+
+  .topbar .brand-inline {
+    max-width: calc(100% - 78px);
+  }
+
+  .topbar h1:after {
+    font-size: clamp(15px, 4vw, 20px);
+  }
+
+  .topbar .sub {
+    font-size: 9px;
+    line-height: 1.35;
+  }
+
+  .topbar > .btn {
+    flex: 0 0 auto;
+    padding-inline: 11px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .options {
+    grid-template-columns: 1fr;
+  }
+
+  .question-text {
+    font-size: clamp(21px, 6vw, 30px);
+    margin-bottom: 22px;
+  }
+
+  .participant-result-panel {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  .participant-result-panel .timer {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .participant-result-panel #stateText {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin: 0;
+  }
+
+  .participant-result-panel #submitBtn {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .participant-result-panel #answerMsg {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .row,
+  .row-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+
+  .actions > * {
+    width: 100%;
+  }
+
+  .show-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h1 {
+    font-size: clamp(44px, 14vw, 68px);
+  }
+
+  .lede {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .hero-stage {
+    min-height: 260px;
+  }
+
+  .stage-ring {
+    width: min(280px, 72vw);
+  }
+
+  .logo-core {
+    width: 130px;
+    height: 130px;
+    font-size: 29px;
+  }
+
+  .logo-caption {
+    font-size: 8px;
+    letter-spacing: .2em;
+  }
+
+  .login {
+    width: 100%;
+    margin: clamp(28px, 8vh, 72px) auto;
+  }
+
+  .qtable {
+    min-width: 620px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .shell {
+    width: calc(100% - 20px);
+  }
+
+  .panel {
+    padding: 14px;
+  }
+
+  .question-box {
+    padding: 16px;
+  }
+
+  .question-meta {
+    font-size: 9px;
+    letter-spacing: .1em;
+  }
+
+  .question-text {
+    font-size: clamp(20px, 6.2vw, 27px);
+    line-height: 1.22;
+  }
+
+  .option {
+    padding: 13px;
+    gap: 10px;
+  }
+
+  .option .letter {
+    width: 30px;
+    height: 30px;
+  }
+
+  .participant-result-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .participant-result-panel .timer,
+  .participant-result-panel #submitBtn,
+  .participant-result-panel #stateText,
+  .participant-result-panel #answerMsg {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .participant-result-panel #submitBtn {
+    width: 100%;
+  }
+
+  .hero h1 {
+    font-size: clamp(40px, 13vw, 58px);
+  }
+
+  .brand-mark span {
+    width: 34px;
+    height: 34px;
+  }
+
+  .show-card {
+    padding: 15px;
+  }
+
+  .section-title {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .section-title > * {
+    min-width: 0;
+  }
+
+  .status-pill,
+  .status-badge {
+    flex: 0 0 auto;
+  }
+}
+
+/* Very narrow devices (320–359px). */
+@media (max-width: 359px) {
+  .shell {
+    width: calc(100% - 16px);
+  }
+
+  .app {
+    padding-top: 12px;
+  }
+
+  .topbar .brand-inline {
+    max-width: 100%;
+    padding-left: 38px;
+  }
+
+  .topbar:before {
+    width: 28px;
+    height: 28px;
+  }
+
+  .topbar > .btn {
+    width: 100%;
+  }
+
+  .question-text {
+    font-size: 20px;
+  }
+
+  .option {
+    font-size: 14px;
+  }
+
+  .hero h1 {
+    font-size: 38px;
+  }
+}
+
+/* Short screens: reduce decorative/outer spacing, never force a fixed game height. */
+@media (max-height: 760px) and (min-width: 701px) {
+  .app {
+    padding-block: 16px 28px;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  .question-box {
+    padding: 22px;
+  }
+
+  .question-text {
+    margin-bottom: 20px;
+  }
+
+  .landing-grid {
+    padding-block: 36px 56px;
+  }
+
+  .hero-stage {
+    min-height: 340px;
+  }
+}
+
+@media (max-height: 640px) and (min-width: 701px) {
+  .landing-grid {
+    padding-block: 24px 48px;
+  }
+
+  .hero-stage {
+    min-height: 280px;
+  }
+
+  .logo-core {
+    width: 150px;
+    height: 150px;
+  }
+}
