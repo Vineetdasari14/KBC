@@ -11,40 +11,10 @@
 <body>
 <main class="app shell">
 <div class="topbar"><div class="brand-inline"><div class="mini-logo">K</div><div><h1>Champion Seat</h1><div class="sub">Participant console</div></div></div><a class="btn btn-ghost" href="index.html">Home</a></div>
-
-<section id="join" class="panel login">
-  <div class="center"><h2>Join the Game</h2><p class="muted">Enter your name and wait for the host to approve you.</p></div>
-  <div class="field"><label for="pname">Participant Name</label><input id="pname" maxlength="80" placeholder="Your name" autocomplete="off"></div>
-  <button id="joinBtn" class="btn btn-gold" style="width:100%">Request to Join</button>
-  <div id="joinError" class="error"></div>
-</section>
-
-<section id="waiting" class="panel login" style="display:none">
-  <div class="center"><h2>Request Sent</h2><p class="muted">Your request has been sent to the host.</p><div id="waitingName" style="font-size:22px;font-weight:700;margin:20px 0"></div><div class="status-badge">Waiting for host approval...</div><p id="waitingMessage" class="muted" style="margin-top:20px">Please keep this page open.</p></div>
-</section>
-
-<section id="approved" class="panel login" style="display:none">
-  <div class="center"><h2>You're Approved</h2><p class="muted">The host has approved you to participate.</p><div id="approvedName" style="font-size:22px;font-weight:700;margin:20px 0"></div><button id="continueBtn" class="btn btn-gold" style="width:100%">Enter Game</button></div>
-</section>
-
-<section id="game" style="display:none">
-  <div class="game-with-progress">
-    <div>
-      <div class="panel"><div id="qbox" class="question-box"><div class="muted">Waiting for the host...</div></div></div>
-      <div class="panel participant-result-panel">
-        <div id="timer" class="timer">--</div>
-        <p id="stateText" class="muted">Waiting</p>
-        <button id="submitBtn" class="btn btn-gold" disabled>Submit Answer</button>
-        <div id="answerMsg" class="result-message"></div>
-      </div>
-    </div>
-    <aside class="progress-panel panel" aria-label="Game progress">
-      <div class="section-title"><div><h2>Game Progress</h2><div class="muted">Question / prize ladder</div></div></div>
-      <div id="progressList" class="progress-list"><div class="muted">Loading...</div></div>
-      <div class="progress-total"><span>Total Points</span><strong id="totalPoints">₹0</strong></div>
-    </aside>
-  </div>
-</section>
+<section id="join" class="panel login"><div class="center"><h2>Join the Game</h2><p class="muted">Enter your name and wait for the host to approve you.</p></div><div class="field"><label for="pname">Participant Name</label><input id="pname" maxlength="80" placeholder="Your name" autocomplete="off"></div><button id="joinBtn" class="btn btn-gold" style="width:100%">Request to Join</button><div id="joinError" class="error"></div></section>
+<section id="waiting" class="panel login" style="display:none"><div class="center"><h2>Request Sent</h2><p class="muted">Your request has been sent to the host.</p><div id="waitingName" style="font-size:22px;font-weight:700;margin:20px 0"></div><div class="status-badge">Waiting for host approval...</div><p id="waitingMessage" class="muted" style="margin-top:20px">Please keep this page open.</p></div></section>
+<section id="approved" class="panel login" style="display:none"><div class="center"><h2>You're Approved</h2><p class="muted">The host has approved you to participate.</p><div id="approvedName" style="font-size:22px;font-weight:700;margin:20px 0"></div><button id="continueBtn" class="btn btn-gold" style="width:100%">Enter Game</button></div></section>
+<section id="game" style="display:none"><div class="game-with-progress"><div><div class="panel"><div id="qbox" class="question-box"><div class="muted">Waiting for the host...</div></div></div><div class="panel participant-result-panel"><div id="timer" class="timer">--</div><p id="stateText" class="muted">Waiting</p><button id="submitBtn" class="btn btn-gold" disabled>Submit Answer</button><div id="answerMsg" class="result-message"></div></div></div><aside class="progress-panel panel" aria-label="Game progress"><div class="section-title"><div><h2>Game Progress</h2><div class="muted">Question / prize ladder</div></div></div><div id="progressList" class="progress-list"><div class="muted">Loading...</div></div><div class="progress-total"><span>Total Points</span><strong id="totalPoints">₹0</strong></div></aside></div></section>
 </main>
 <script>
 let SB=null,state=null;
@@ -53,128 +23,24 @@ let participantToken=localStorage.getItem("kbc_participant_token")||null;
 let participantName=localStorage.getItem("kbc_participant_name")||"";
 let selected=null,submittedFor=null,timerHandle=null,approvalPollHandle=null,gameChannel=null;
 let progress=[];
-
 function currentProgress(){return progress.find(x=>x.question_id===state?.question_id)||null}
 function isRevealed(){return state?.reveal_answer===true}
-
-function qMarkup(g){
-  if(!g||!g.question_text)return `<div class="muted">Waiting for the host to start the next question.</div>`;
-  const revealed=isRevealed();
-  const correctOption=revealed?(g.selected_option||null):null;
-  const result=currentProgress();
-  const participantAnswered=result?.selected_option||selected;
-  return `<div class="question-meta"><span>Question ${g.question_number}</span><span>${fmtMoney(g.prize)}</span></div>
-  <h2 class="question-text">${esc(g.question_text)}</h2>
-  <div class="options">${["A","B","C","D"].map(x=>{
-    let cls="";
-    let label="";
-    if(!revealed&&participantAnswered===x)cls="selected";
-    if(revealed){
-      if(x===correctOption){cls="answer-correct";label="✓ Correct Answer"}
-      else if(participantAnswered===x){cls="answer-wrong";label="✕ Your Answer"}
-    }
-    return `<button class="option ${cls}" data-opt="${x}" ${state?.status!=="live"||submittedFor===g.question_id||revealed?"disabled":""}><span class="letter">${x}</span><span class="option-copy"><span>${esc(g["option_"+x.toLowerCase()])}</span>${label?`<small class="option-result">${label}</small>`:""}</span></button>`;
-  }).join("")}</div>`;
-}
-
-function render(){
-  qs("#qbox").innerHTML=qMarkup(state);
-  qsa(".option[data-opt]").forEach(button=>button.onclick=()=>{
-    if(state?.reveal_answer===true||submittedFor===state?.question_id||state?.status!=="live")return;
-    selected=button.dataset.opt;render();
-  });
-  const result=currentProgress();
-  if(isRevealed()){
-    qs("#stateText").textContent=result?.is_correct?"Correct answer — prize won":"Wrong answer — ₹0 for this round";
-    qs("#submitBtn").disabled=true;
-    qs("#answerMsg").className=result?.is_correct?"result-message result-win":"result-message result-loss";
-    qs("#answerMsg").innerHTML=result?.is_correct?`✓ Correct — You won ${fmtMoney(state.prize)} for this question.`:`✕ Wrong — Correct answer: <strong>${esc(state.selected_option||"Not available")}</strong>. Prize won: <strong>₹0</strong>.`;
-  }else if(state?.status==="live"){
-    qs("#stateText").textContent=submittedFor===state.question_id?"Answer submitted":(selected?"Answer selected":"Choose one answer");
-    qs("#submitBtn").disabled=!selected||submittedFor===state.question_id;
-    if(!result?.is_correct&&!result?.selected_option){qs("#answerMsg").textContent="";qs("#answerMsg").className="result-message"}
-  }else if(state?.status==="paused"){
-    qs("#stateText").textContent="Game paused";qs("#submitBtn").disabled=true;
-  }else{
-    qs("#stateText").textContent=state?.status==="finished"?"Game finished":"Waiting for host";qs("#submitBtn").disabled=true;
-  }
-  startTimer();renderProgress();
-}
-
-function startTimer(){
-  clearInterval(timerHandle);
-  if(!state?.ends_at||state.status!=="live"||isRevealed()){qs("#timer").textContent="--";return}
-  const tick=()=>{const left=Math.max(0,Math.ceil((new Date(state.ends_at)-Date.now())/1000));qs("#timer").textContent=left;if(left<=0){clearInterval(timerHandle);qs("#stateText").textContent="Time is up";qsa(".option").forEach(b=>b.disabled=true);qs("#submitBtn").disabled=true}};
-  tick();timerHandle=setInterval(tick,250);
-}
-
-function renderProgress(){
-  const list=qs("#progressList");
-  if(!progress.length){list.innerHTML=`<div class="muted">No questions available.</div>`;qs("#totalPoints").textContent=fmtMoney(0);return}
-  let total=0;
-  list.innerHTML=progress.map(item=>{
-    const current=item.question_id===state?.question_id;
-    let status="future",indicator="";
-    if(item.is_correct===true){status="won";indicator="✓";total+=Number(item.prize)||0}
-    else if(item.is_correct===false){status="lost";indicator="✕"}
-    else if(current){status="current";indicator="CURRENT"}
-    return `<div class="progress-item progress-${status}"><span class="progress-q">Q${item.question_number}</span><span class="progress-prize">${fmtMoney(item.prize)}</span><span class="progress-indicator">${indicator}</span></div>`;
-  }).join("");
-  qs("#totalPoints").textContent=fmtMoney(total);
-}
-
-async function loadProgress(){
-  if(!participantId||!participantToken)return;
-  const {data,error}=await SB.rpc("get_participant_progress",{p_id:participantId,p_token:participantToken});
-  if(error){qs("#progressList").innerHTML=`<div class="error">${esc(error.message)}</div>`;return}
-  progress=data||[];renderProgress();
-}
-
-async function submit(){
-  if(!selected||!participantId||!participantToken||!state?.question_id||submittedFor===state.question_id)return;
-  const {error}=await SB.rpc("submit_participant_answer",{p_id:participantId,p_token:participantToken,p_question_id:state.question_id,p_selected_option:selected});
-  if(error){qs("#answerMsg").textContent=error.message;qs("#answerMsg").className="result-message result-loss";return}
-  submittedFor=state.question_id;
-  await loadProgress();
-  qs("#answerMsg").textContent="Answer submitted.";qs("#answerMsg").className="result-message";render();
-}
-
-async function requestJoin(){
-  const name=qs("#pname").value.trim();qs("#joinError").textContent="";
-  if(name.length<2){qs("#joinError").textContent="Enter at least 2 characters.";return}
-  qs("#joinBtn").disabled=true;qs("#joinBtn").textContent="Sending Request...";
-  const {data,error}=await SB.rpc("request_participant",{p_name:name});
-  if(error){qs("#joinError").textContent=error.message;qs("#joinBtn").disabled=false;qs("#joinBtn").textContent="Request to Join";return}
-  participantId=data.id;participantToken=data.session_token;participantName=data.name;
-  localStorage.setItem("kbc_participant_id",participantId);localStorage.setItem("kbc_participant_token",participantToken);localStorage.setItem("kbc_participant_name",participantName);
-  showWaiting();startApprovalPolling();
-}
+function qMarkup(g){if(!g||!g.question_text)return `<div class="muted">Waiting for the host to start the next question.</div>`;const revealed=isRevealed();const correctOption=revealed?(g.selected_option||null):null;const result=currentProgress();const participantAnswered=result?.selected_option||selected;return `<div class="question-meta"><span>Question ${g.question_number}</span><span>${fmtMoney(g.prize)}</span></div><h2 class="question-text">${esc(g.question_text)}</h2><div class="options">${["A","B","C","D"].map(x=>{let cls="",label="";if(!revealed&&participantAnswered===x)cls="selected";if(revealed){if(x===correctOption){cls="answer-correct";label="✓ Correct Answer"}else if(participantAnswered===x){cls="answer-wrong";label="✕ Your Answer"}}return `<button class="option ${cls}" data-opt="${x}" ${state?.status!=="live"||submittedFor===g.question_id||revealed?"disabled":""}><span class="letter">${x}</span><span class="option-copy"><span>${esc(g["option_"+x.toLowerCase()])}</span>${label?`<small class="option-result">${label}</small>`:""}</span></button>`}).join("")}</div>`}
+function render(){qs("#qbox").innerHTML=qMarkup(state);qsa(".option[data-opt]").forEach(button=>button.onclick=()=>{if(state?.reveal_answer===true||submittedFor===state?.question_id||state?.status!=="live")return;selected=button.dataset.opt;render()});const result=currentProgress();if(isRevealed()){qs("#stateText").textContent=result?.is_correct?"Correct answer — prize won":"Wrong answer — ₹0 for this round";qs("#submitBtn").disabled=true;qs("#answerMsg").className=result?.is_correct?"result-message result-win":"result-message result-loss";qs("#answerMsg").innerHTML=result?.is_correct?`✓ Correct — You won ${fmtMoney(state.prize)} for this question.`:`✕ Wrong — Correct answer: <strong>${esc(state.selected_option||"Not available")}</strong>. Prize won: <strong>₹0</strong>.`}else if(state?.status==="live"){qs("#stateText").textContent=submittedFor===state.question_id?"Answer submitted":(selected?"Answer selected":"Choose one answer");qs("#submitBtn").disabled=!selected||submittedFor===state.question_id;if(!result?.selected_option){qs("#answerMsg").textContent="";qs("#answerMsg").className="result-message"}}else if(state?.status==="paused"){qs("#stateText").textContent="Game paused";qs("#submitBtn").disabled=true}else{qs("#stateText").textContent=state?.status==="finished"?"Game finished":"Waiting for host";qs("#submitBtn").disabled=true}startTimer();renderProgress()}
+function startTimer(){clearInterval(timerHandle);if(!state?.ends_at||state.status!=="live"||isRevealed()){qs("#timer").textContent="--";return}const tick=()=>{const left=Math.max(0,Math.ceil((new Date(state.ends_at)-Date.now())/1000));qs("#timer").textContent=left;if(left<=0){clearInterval(timerHandle);qs("#stateText").textContent="Time is up";qsa(".option").forEach(b=>b.disabled=true);qs("#submitBtn").disabled=true}};tick();timerHandle=setInterval(tick,250)}
+function renderProgress(){const list=qs("#progressList");if(!progress.length){list.innerHTML=`<div class="muted">No questions available.</div>`;qs("#totalPoints").textContent=fmtMoney(0);return}let total=0;list.innerHTML=progress.map(item=>{const current=item.question_id===state?.question_id;let status="future",indicator="";if(item.is_correct===true){status="won";indicator="✓";total+=Number(item.prize)||0}else if(item.is_correct===false){status="lost";indicator="✕"}else if(current){status="current";indicator="CURRENT"}return `<div class="progress-item progress-${status}"><span class="progress-q">Q${item.question_number}</span><span class="progress-prize">${fmtMoney(item.prize)}</span><span class="progress-indicator">${indicator}</span></div>`}).join("");qs("#totalPoints").textContent=fmtMoney(total)}
+async function loadProgress(){if(!participantId||!participantToken)return;const {data,error}=await SB.rpc("get_participant_progress",{p_id:participantId,p_token:participantToken});if(error){qs("#progressList").innerHTML=`<div class="error">${esc(error.message)}</div>`;return}progress=data||[];const current=currentProgress();if(current?.selected_option&&state?.question_id===current.question_id){selected=current.selected_option;submittedFor=current.question_id}renderProgress()}
+async function submit(){if(!selected||!participantId||!participantToken||!state?.question_id||submittedFor===state.question_id)return;const {error}=await SB.rpc("submit_participant_answer",{p_id:participantId,p_token:participantToken,p_question_id:state.question_id,p_selected_option:selected});if(error){qs("#answerMsg").textContent=error.message;qs("#answerMsg").className="result-message result-loss";return}submittedFor=state.question_id;await loadProgress();qs("#answerMsg").textContent="Answer submitted.";qs("#answerMsg").className="result-message";render()}
+async function requestJoin(){const name=qs("#pname").value.trim();qs("#joinError").textContent="";if(name.length<2){qs("#joinError").textContent="Enter at least 2 characters.";return}qs("#joinBtn").disabled=true;qs("#joinBtn").textContent="Sending Request...";const {data,error}=await SB.rpc("request_participant",{p_name:name});if(error){qs("#joinError").textContent=error.message;qs("#joinBtn").disabled=false;qs("#joinBtn").textContent="Request to Join";return}participantId=data.id;participantToken=data.session_token;participantName=data.name;localStorage.setItem("kbc_participant_id",participantId);localStorage.setItem("kbc_participant_token",participantToken);localStorage.setItem("kbc_participant_name",participantName);showWaiting();startApprovalPolling()}
 function showWaiting(){qs("#join").style.display="none";qs("#approved").style.display="none";qs("#game").style.display="none";qs("#waiting").style.display="block";qs("#waitingName").textContent=participantName}
 function showApproved(){qs("#join").style.display="none";qs("#waiting").style.display="none";qs("#game").style.display="none";qs("#approved").style.display="block";qs("#approvedName").textContent=participantName}
 function clearParticipantSession(){clearInterval(approvalPollHandle);participantId=null;participantToken=null;participantName="";localStorage.removeItem("kbc_participant_id");localStorage.removeItem("kbc_participant_token");localStorage.removeItem("kbc_participant_name")}
-async function checkApproval(){
-  if(!participantId||!participantToken)return;
-  const {data,error}=await SB.rpc("get_participant_status",{p_id:participantId,p_token:participantToken});
-  if(error){qs("#waitingMessage").textContent="Your participant session is no longer valid. Please request to join again.";qs("#waitingMessage").className="error";clearInterval(approvalPollHandle);return}
-  const participant=data?.[0];if(!participant)return;
-  participantName=participant.name;localStorage.setItem("kbc_participant_name",participantName);
-  if(participant.status==="approved"){clearInterval(approvalPollHandle);showApproved()}
-  else if(participant.status==="rejected"){clearInterval(approvalPollHandle);qs("#waitingMessage").textContent="Your request was not approved by the host.";qs("#waitingMessage").className="error";setTimeout(()=>{clearParticipantSession();qs("#waiting").style.display="none";qs("#join").style.display="block";qs("#joinBtn").disabled=false;qs("#joinBtn").textContent="Request to Join"},1500)}
-}
+async function checkApproval(){if(!participantId||!participantToken)return;const {data,error}=await SB.rpc("get_participant_status",{p_id:participantId,p_token:participantToken});if(error){qs("#waitingMessage").textContent="Your participant session is no longer valid. Please request to join again.";qs("#waitingMessage").className="error";clearInterval(approvalPollHandle);return}const participant=data?.[0];if(!participant)return;participantName=participant.name;localStorage.setItem("kbc_participant_name",participantName);if(participant.status==="approved"){clearInterval(approvalPollHandle);showApproved()}else if(participant.status==="rejected"){clearInterval(approvalPollHandle);qs("#waitingMessage").textContent="Your request was not approved by the host.";qs("#waitingMessage").className="error";setTimeout(()=>{clearParticipantSession();qs("#waiting").style.display="none";qs("#join").style.display="block";qs("#joinBtn").disabled=false;qs("#joinBtn").textContent="Request to Join"},1500)}}
 function startApprovalPolling(){clearInterval(approvalPollHandle);checkApproval();approvalPollHandle=setInterval(checkApproval,2000)}
 async function enterGame(){qs("#approved").style.display="none";qs("#game").style.display="block";await loadGame();await loadProgress();render()}
 async function loadGame(){const {data,error}=await SB.from("game_state").select("*").eq("id",true).single();if(!error&&data){state=data;if(submittedFor!==state.question_id){selected=null;submittedFor=null}render()}}
-
-async function init(){
-  SB=await getSB();
-  qs("#joinBtn").onclick=requestJoin;qs("#continueBtn").onclick=enterGame;qs("#submitBtn").onclick=submit;
-  if(participantId&&participantToken){const {data,error}=await SB.rpc("get_participant_status",{p_id:participantId,p_token:participantToken});if(!error&&data?.[0]){participantName=data[0].name;localStorage.setItem("kbc_participant_name",participantName);if(data[0].status==="pending"){showWaiting();startApprovalPolling()}else if(data[0].status==="approved")showApproved();else clearParticipantSession()}else clearParticipantSession()}
-  const {data:g}=await SB.from("game_state").select("*").eq("id",true).single();state=g||null;
-  gameChannel=SB.channel("participant-game").on("postgres_changes",{event:"UPDATE",schema:"public",table:"game_state"},async payload=>{state=payload.new;if(submittedFor!==state.question_id){selected=null;submittedFor=null;qs("#answerMsg").textContent=""}if(participantId&&participantToken){await loadProgress()}if(qs("#game").style.display!=="none")render()}).subscribe();
-  if(participantId&&participantToken&&qs("#game").style.display!=="none"){await loadProgress();render()}
-}
-window.addEventListener("beforeunload",()=>{clearInterval(timerHandle);clearInterval(approvalPollHandle);if(gameChannel)SB?.removeChannel(gameChannel)});
-init();
+async function init(){SB=await getSB();qs("#joinBtn").onclick=requestJoin;qs("#continueBtn").onclick=enterGame;qs("#submitBtn").onclick=submit;if(participantId&&participantToken){const {data,error}=await SB.rpc("get_participant_status",{p_id:participantId,p_token:participantToken});if(!error&&data?.[0]){participantName=data[0].name;localStorage.setItem("kbc_participant_name",participantName);if(data[0].status==="pending"){showWaiting();startApprovalPolling()}else if(data[0].status==="approved")showApproved();else clearParticipantSession()}else clearParticipantSession()}const {data:g}=await SB.from("game_state").select("*").eq("id",true).single();state=g||null;gameChannel=SB.channel("participant-game").on("postgres_changes",{event:"UPDATE",schema:"public",table:"game_state"},async payload=>{state=payload.new;if(submittedFor!==state.question_id){selected=null;submittedFor=null;qs("#answerMsg").textContent=""}if(participantId&&participantToken){await loadProgress()}if(qs("#game").style.display!=="none")render()}).subscribe();if(participantId&&participantToken&&qs("#game").style.display!=="none"){await loadProgress();render()}}
+window.addEventListener("beforeunload",()=>{clearInterval(timerHandle);clearInterval(approvalPollHandle);if(gameChannel)SB?.removeChannel(gameChannel)});init();
 </script>
 </body>
 </html>
