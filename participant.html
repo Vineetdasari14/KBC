@@ -237,8 +237,14 @@ function qMarkup(g) {
 
   const revealed = g.reveal_answer === true;
 
+  /*
+   * IMPORTANT:
+   * Admin stores the correct option in game_state.selected_option
+   * when reveal_answer is true. Before reveal this field must not
+   * be treated as the correct answer.
+   */
   const correctOption =
-    g.correct_option || null;
+    revealed ? (g.selected_option || null) : null;
 
   return `
 
@@ -266,45 +272,26 @@ function qMarkup(g) {
 
         let answerClass = "";
 
-        /*
-         * BEFORE REVEAL:
-         * Only show participant selection.
-         */
-
-        if (!revealed) {
-
-          if (selected === x) {
-            answerClass = "selected";
-          }
-
+        /* Before reveal, only the participant's selection is shown. */
+        if (!revealed && selected === x) {
+          answerClass = "selected";
         }
 
-
-        /*
-         * AFTER REVEAL:
-         * Correct answer = GREEN
-         * Participant's wrong answer = RED
-         */
-
+        /* After reveal, show the correct answer and a submitted wrong answer. */
         if (revealed) {
 
           if (x === correctOption) {
-
             answerClass = "answer-correct";
-
           }
           else if (
             submittedFor === g.question_id &&
             selected === x &&
             x !== correctOption
           ) {
-
             answerClass = "answer-wrong";
-
           }
 
         }
-
 
         return `
 
