@@ -12,53 +12,110 @@
 <main class="app shell">
 <div class="topbar"><div class="brand-inline"><div class="mini-logo">K</div><div><h1>Live Audience</h1><div class="sub">Public viewing screen</div></div></div><a class="btn btn-ghost" href="index.html">Home</a></div>
 <section id="join" class="panel login"><div class="center"><h2>Enter the Audience</h2><p class="muted">Your name is used only to identify you on this device.</p></div><div class="field"><label for="vname">Your Name</label><input id="vname" maxlength="80" placeholder="Audience member"></div><button id="joinBtn" class="btn btn-gold" style="width:100%">Continue</button><div id="joinError" class="error"></div></section>
-<section id="live" style="display:none"><div class="live-layout"><div class="panel"><div id="qbox" class="question-box"><div class="muted">Waiting for the host...</div></div></div><div class="panel"><div class="section-title"><h2>Live Selections</h2><span id="count" class="status-pill pill-idle">0</span></div><div id="selections" class="selection-list"></div><div id="reveal" style="display:none" class="reveal"></div></div></div></section>
+<section id="live" style="display:none">
+  <div class="game-with-progress live-game-with-progress">
+    <div>
+      <div class="panel"><div id="qbox" class="question-box"><div class="muted">Waiting for the host...</div></div></div>
+      <div class="panel audience-result-panel">
+        <div id="reveal" style="display:none" class="reveal"></div>
+        <div class="section-title" style="margin-top:16px"><h2>Live Selections</h2><span id="count" class="status-pill pill-idle">0</span></div>
+        <div id="selections" class="selection-list"></div>
+      </div>
+    </div>
+    <aside class="progress-panel panel" aria-label="Game progress">
+      <div class="section-title"><div><h2>Game Progress</h2><div class="muted">Question / prize ladder</div></div></div>
+      <div id="progressList" class="progress-list"><div class="muted">Loading...</div></div>
+      <div class="progress-total"><span>Total Points</span><strong id="totalPoints">₹0</strong></div>
+    </aside>
+  </div>
+</section>
 </main>
 <script>
 let SB=null,state=null,liveChannel=null,viewerRegistered=localStorage.getItem("kbc_viewer_registered")==="1";
+let selections=[],progress=[];
+
+function currentProgress(){return progress.find(x=>x.question_id===state?.question_id)||null}
+function currentSelection(){return selections.length===1?selections[0]:null}
+
 function renderQ(){
   const hasQuestion=!!state&&!!state.question_text;
   if(!hasQuestion){qs("#qbox").innerHTML=`<div class="muted">The host has not started a question.</div>`;qs("#reveal").style.display="none";return}
   const revealed=state.reveal_answer===true;
   const correctOption=revealed?(state.selected_option||null):null;
-  qs("#qbox").innerHTML=`<div class="question-meta"><span>Question ${state.question_number}</span><span>${fmtMoney(state.prize)}</span></div><h2 class="question-text">${esc(state.question_text)}</h2><div class="options">${["A","B","C","D"].map(x=>`<div class="option ${revealed&&x===correctOption?"answer-correct":""}"><span class="letter">${x}</span><span>${esc(state["option_"+x.toLowerCase()])}</span></div>`).join("")}</div>${revealed?`<div class="reveal">The host has revealed the answer.</div>`:""}`;
-  if(revealed){qs("#reveal").style.display="block";qs("#reveal").textContent="Answer revealed by the host."}else qs("#reveal").style.display="none";
+  const one=currentSelection();
+  qs("#qbox").innerHTML=`<div class="question-meta"><span>Question ${state.question_number}</span><span>${fmtMoney(state.prize)}</span></div><h2 class="question-text">${esc(state.question_text)}</h2><div class="options">${["A","B","C","D"].map(x=>{
+    let cls="",label="";
+    if(!revealed&&one?.selected_option===x)cls="selected";
+    if(revealed){if(x===correctOption){cls="answer-correct";label="✓ Correct Answer"}else if(one?.selected_option===x){cls="answer-wrong";label="✕ Your Answer"}}
+    return `<div class="option ${cls}"><span class="letter">${x}</span><span class="option-copy"><span>${esc(state["option_"+x.toLowerCase()])}</span>${label?`<small class="option-result">${label}</small>`:""}</span></div>`;
+  }).join("")}</div>`;
+  if(revealed){
+    qs("#reveal").style.display="block";
+    const result=currentProgress();
+    qs("#reveal").textContent=result?.result==="won"?`✓ Correct — ${one?.participant_name||"Participant"} won ${fmtMoney(state.prize)} for this question.`:result?.result==="lost"?`✕ Wrong — Correct answer: ${correctOption}. Prize won: ₹0.`:"Answer revealed by the host.";
+  }else qs("#reveal").style.display="none";
 }
-function clearSelections(){qs("#selections").innerHTML="";qs("#count").textContent="0"}
+
+function clearSelections(){selections=[];qs("#selections").innerHTML="";qs("#count").textContent="0"}
+function renderSelections(){
+  const revealed=state?.reveal_answer===true;
+  const correctOption=revealed?(state.selected_option||null):null;
+  qs("#count").textContent=String(selections.length);
+  qs("#selections").innerHTML=selections.length?selections.map(x=>{
+    let cls="selection",result="";
+    if(revealed){if(x.selected_option===correctOption){cls+=" selection-correct";result="✓ Correct"}else{cls+=" selection-wrong";result="✕ Wrong"}}
+    return `<div class="${cls}"><span class="who">${esc(x.participant_name)}</span><span class="selection-result"><span class="pick">${esc(x.selected_option)}</span>${result?`<small>${result}</small>`:""}</span></div>`;
+  }).join(""): `<div class="muted">No answers yet.</div>`;
+}
 function appendSelection(x){
-  const row=document.createElement("div");
-  row.className="selection";
-  row.dataset.participant=x.participant_id;
-  row.innerHTML=`<span class="who">${esc(x.participant_name)}</span><span class="pick">${esc(x.selected_option)}</span>`;
-  const existing=qs(`#selections [data-participant="${CSS.escape(x.participant_id)}"]`);
-  if(existing) existing.replaceWith(row); else qs("#selections").appendChild(row);
-  qs("#count").textContent=qsa("#selections .selection").length;
+  const index=selections.findIndex(s=>s.participant_id===x.participant_id);
+  if(index>=0)selections[index]=x;else selections.push(x);
+  selections.sort((a,b)=>new Date(b.selected_at)-new Date(a.selected_at));
+  renderSelections();renderQ();
 }
+
 async function loadSelections(){
-  if(!state?.question_id){clearSelections();return}
+  if(!state?.question_id){clearSelections();renderQ();return}
   const {data,error}=await SB.from("live_selections").select("participant_id,participant_name,selected_option,selected_at").eq("question_id",state.question_id).order("selected_at",{ascending:false});
   if(error){qs("#selections").innerHTML=`<div class="error">${esc(error.message)}</div>`;qs("#count").textContent="0";return}
-  clearSelections();
-  (data||[]).forEach(appendSelection);
+  selections=data||[];renderSelections();renderQ();
 }
+
+async function loadProgress(){
+  const {data,error}=await SB.rpc("get_public_game_progress");
+  if(error){qs("#progressList").innerHTML=`<div class="error">${esc(error.message)}</div>`;return}
+  progress=data||[];renderProgress();renderQ();
+}
+function renderProgress(){
+  const list=qs("#progressList");
+  if(!progress.length){list.innerHTML=`<div class="muted">No questions available.</div>`;qs("#totalPoints").textContent=fmtMoney(0);return}
+  let total=0;
+  list.innerHTML=progress.map(item=>{
+    let status="future",indicator="";
+    if(item.result==="won"){status="won";indicator="✓";total+=Number(item.prize)||0}
+    else if(item.result==="lost"){status="lost";indicator="✕"}
+    else if(item.result==="current"||item.question_id===state?.question_id){status="current";indicator="CURRENT"}
+    return `<div class="progress-item progress-${status}"><span class="progress-q">Q${item.question_number}</span><span class="progress-prize">${fmtMoney(item.prize)}</span><span class="progress-indicator">${indicator}</span></div>`;
+  }).join("");
+  qs("#totalPoints").textContent=fmtMoney(total);
+}
+
 async function registerViewer(){
   if(viewerRegistered)return true;
   const n=qs("#vname").value.trim();
   if(n.length<2){qs("#joinError").textContent="Enter at least 2 characters.";return false}
   const {error}=await SB.from("viewers").insert({viewer_name:n});
   if(error){qs("#joinError").textContent=error.message;return false}
-  localStorage.setItem("kbc_viewer_registered","1");
-  viewerRegistered=true;
-  return true;
+  localStorage.setItem("kbc_viewer_registered","1");viewerRegistered=true;return true;
 }
+
 async function init(){
   SB=await getSB();
-  qs("#joinBtn").onclick=async()=>{if(!(await registerViewer()))return;qs("#join").style.display="none";qs("#live").style.display="block";renderQ();await loadSelections()};
-  const {data:g,error}=await SB.from("game_state").select("*").eq("id",true).single();
-  if(!error)state=g;
-  renderQ();
+  qs("#joinBtn").onclick=async()=>{if(!(await registerViewer()))return;qs("#join").style.display="none";qs("#live").style.display="block";renderQ();await loadSelections();await loadProgress()};
+  const {data:g,error}=await SB.from("game_state").select("*").eq("id",true).single();if(!error)state=g;
+  await loadProgress();renderQ();
   liveChannel=SB.channel("public-live")
-    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"game_state"},async p=>{state=p.new;renderQ();await loadSelections()})
+    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"game_state"},async p=>{state=p.new;selections=[];await loadSelections();await loadProgress()})
     .on("postgres_changes",{event:"INSERT",schema:"public",table:"live_selections"},p=>{if(state?.question_id===p.new.question_id)appendSelection(p.new)})
     .subscribe();
 }
