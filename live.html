@@ -6,7 +6,13 @@
 </main>
 <script>
 let SB,state=null;
-function renderQ(){qs("#qbox").innerHTML=!state||!state.question_text?`<div class="muted">The host has not started a question.</div>`:`<div class="question-meta"><span>Question ${state.question_number}</span><span>${fmtMoney(state.prize)}</span></div><h2 class="question-text">${esc(state.question_text)}</h2><div class="options">${["A","B","C","D"].map(x=>`<div class="option"><span class="letter">${x}</span><span>${esc(state["option_"+x.toLowerCase()])}</span></div>`).join("")}</div>${state.reveal_answer?`<div class="reveal">The host has revealed the answer.</div>`:""}`;if(state?.reveal_answer){qs("#reveal").style.display="block";qs("#reveal").textContent="Answer revealed by the host."}else qs("#reveal").style.display="none"}
+function renderQ(){
+const hasQuestion=!!state&&!!state.question_text;
+if(!hasQuestion){qs("#qbox").innerHTML=`<div class="muted">The host has not started a question.</div>`;qs("#reveal").style.display="none";return}
+const revealed=state.reveal_answer===true;
+const correctOption=revealed?(state.selected_option||null):null;
+qs("#qbox").innerHTML=`<div class="question-meta"><span>Question ${state.question_number}</span><span>${fmtMoney(state.prize)}</span></div><h2 class="question-text">${esc(state.question_text)}</h2><div class="options">${["A","B","C","D"].map(x=>`<div class="option ${revealed&&x===correctOption?"answer-correct":""}"><span class="letter">${x}</span><span>${esc(state["option_"+x.toLowerCase()])}</span></div>`).join("")}</div>${revealed?`<div class="reveal">The host has revealed the answer.</div>`:""}`;
+if(revealed){qs("#reveal").style.display="block";qs("#reveal").textContent="Answer revealed by the host."}else qs("#reveal").style.display="none"}
 async function loadSelections(){if(!state?.question_id){qs("#selections").innerHTML="";qs("#count").textContent="0";return}const {data,error}=await SB.from("live_selections").select("participant_id,participant_name,selected_option,selected_at").eq("question_id",state.question_id).order("selected_at",{ascending:false});if(error)return;qs("#count").textContent=(data||[]).length;qs("#selections").innerHTML=(data||[]).map(x=>`<div class="selection"><span class="who">${esc(x.participant_name)}</span><span class="pick">${x.selected_option}</span></div>`).join("")||`<div class="muted">No answers yet.</div>`}
 async function init(){SB=await getSB();qs("#joinBtn").onclick=async()=>{const n=qs("#vname").value.trim();if(!n)return;await SB.from("viewers").insert({viewer_name:n});qs("#join").style.display="none";qs("#live").style.display="block";renderQ();await loadSelections()};
 const {data:g}=await SB.from("game_state").select("*").eq("id",true).single();state=g;renderQ();
